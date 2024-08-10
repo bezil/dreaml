@@ -15,16 +15,16 @@ let stats_requests inner_handler request =
     failed := !failed + 1;
     raise exn
 
-  let prod_error _error debug_info suggested_response =
-    let status = Dream.status suggested_response in
-    let code = Dream.status_to_int status
-    and reason = Dream.status_to_string status in
+let prod_error _error debug_info suggested_response =
+  let status = Dream.status suggested_response in
+  let code = Dream.status_to_int status
+  and reason = Dream.status_to_string status in
 
-    Dream.set_header suggested_response "Content-Type" Dream.text_html;
-    Dream.set_body suggested_response begin
-      Errors.render_error code debug_info reason
-    end;
-    Lwt.return suggested_response
+  Dream.set_header suggested_response "Content-Type" Dream.text_html;
+  Dream.set_body suggested_response begin
+    Errors.render_error code debug_info reason
+  end;
+  Lwt.return suggested_response
 
 let () =
     Dream.run ?error_handler:(match Sys.getenv_opt "DREAM_ENV" with
@@ -33,6 +33,7 @@ let () =
     @@ Dream.logger
     @@ count_requests
     @@ stats_requests
+    @@ Dream.memory_sessions
     @@ Dream.router [
       Dream.get "/"
         (fun _ ->
@@ -83,15 +84,29 @@ let () =
             Dream.respond ~status:`Bad_Request "Content-Type header should be application/json")
       );
 
+      Dream.get "/page/:word" (fun request ->
+        Dream.param request "word"
+        |> fun word ->
+        Page.render word
+        |> Dream.html);
 
-    Dream.get "/page/:word" (fun request ->
-        let word = Dream.param request "word" in
-        let html_content = Page.render word in
-        Dream.html html_content);
+      Dream.get "templates/:word"
+      (fun request ->
+        Dream.param request "word"
+        |> Templates.render_html
+        |> Dream.html);
 
-    Dream.get "templates/:word"
-    (fun request ->
-      Dream.param request "word"
-      |> Templates.render_html
-      |> Dream.html);
+      Dream.get "login/:user"
+      (fun request ->
+        match Dream.session_field request "user" with
+        | None ->
+          let user = Dream.param request "user" in
+          let%lwt () = Dream.invalidate_session request in
+          let%lwt () = Dream.set_session_field request "user" user in
+          Printf.ksprintf
+            Dream.html "You weren't logged in; but now you are %s!" (Dream.html_escape user)
+
+        | Some username ->
+          Printf.ksprintf
+            Dream.html "Welcome back, %s!" (Dream.html_escape username))
   ]
