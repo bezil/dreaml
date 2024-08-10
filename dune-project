@@ -1,24 +1,24 @@
 (lang dune 3.16)
 
-(name hello)
+(name DreAML)
 
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github bezil/dreaml))
 
-(authors "Author Name")
+(authors "bezil")
 
-(maintainers "Maintainer Name")
+(maintainers "Basil")
 
 (license LICENSE)
 
-(documentation https://url/to/documentation)
+(documentation https://aantron.github.io/dream/)
 
 (package
  (name hello)
- (synopsis "A short synopsis")
- (description "A longer description")
+ (synopsis "Dream OCAML Webapp")
+ (description "Learn Dream OCAML Web Framework")
  (depends ocaml dune dream)
  (tags
   (topics "to describe" your project)))
