@@ -15,8 +15,21 @@ let stats_requests inner_handler request =
     failed := !failed + 1;
     raise exn
 
+  let prod_error _error debug_info suggested_response =
+    let status = Dream.status suggested_response in
+    let code = Dream.status_to_int status
+    and reason = Dream.status_to_string status in
+
+    Dream.set_header suggested_response "Content-Type" Dream.text_html;
+    Dream.set_body suggested_response begin
+      Errors.render_error code debug_info reason
+    end;
+    Lwt.return suggested_response
+
 let () =
-    Dream.run ?error_handler:(if Sys.getenv_opt "DREAM_ENV" = Some "dev" then Some Dream.debug_error_handler else None)
+    Dream.run ?error_handler:(match Sys.getenv_opt "DREAM_ENV" with
+    | Some "dev" -> Some Dream.debug_error_handler
+    | _ -> Some (Dream.error_template prod_error))
     @@ Dream.logger
     @@ count_requests
     @@ stats_requests

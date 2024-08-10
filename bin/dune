@@ -9,3 +9,7 @@
  (targets templates.ml)
  (deps templates.eml.html)
  (action (run dream_eml %{deps} --workspace %{workspace_root})))
+(rule
+ (targets errors.ml)
+ (deps errors.eml.html)
+ (action (run dream_eml %{deps} --workspace %{workspace_root})))
