@@ -33,6 +33,7 @@ let () =
     @@ Dream.logger
     @@ count_requests
     @@ stats_requests
+    @@ Dream.set_secret (match Sys.getenv_opt "COOKIE_SECRET" with | Some cookie_secret -> cookie_secret | _ ->  "foo")
     @@ Dream.memory_sessions
     @@ Dream.router [
       Dream.get "/"
@@ -104,9 +105,23 @@ let () =
           let%lwt () = Dream.invalidate_session request in
           let%lwt () = Dream.set_session_field request "user" user in
           Printf.ksprintf
-            Dream.html "You weren't logged in; but now you are %s!" (Dream.html_escape user)
+            Dream.html "You weren't logged in; but now you are <b>%s!</b>" (Dream.html_escape user)
 
         | Some username ->
           Printf.ksprintf
-            Dream.html "Welcome back, %s!" (Dream.html_escape username))
+            Dream.html "Welcome back, <b>%s!</b>" (Dream.html_escape username));
+
+      Dream.get "/register/:name"
+      (fun request ->
+        match Dream.cookie request "dreaml.cookie.session" with
+        | Some value ->
+          Printf.ksprintf
+            Dream.html "Your logged in name is %s!" (Dream.html_escape value)
+
+        | None ->
+          let username = Dream.param request "name" in
+          let response = Dream.response "Set user name; come again!" in
+          Dream.add_header response "Content-Type" Dream.text_html;
+          Dream.set_cookie response request "dreaml.cookie.session" username;
+          Lwt.return response);
   ]
