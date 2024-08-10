@@ -1,15 +1,10 @@
 (executable
  (public_name hello)
  (name main)
- (libraries page dream)
+ (libraries controller dream components)
  (preprocess (pps lwt_ppx)))
 
-
 (rule
- (targets templates.ml)
- (deps templates.eml.html)
- (action (run dream_eml %{deps} --workspace %{workspace_root})))
-(rule
- (targets errors.ml)
- (deps errors.eml.html)
+(targets templates.ml errors.ml)
+ (deps templates.eml.html errors.eml.html)
  (action (run dream_eml %{deps} --workspace %{workspace_root})))

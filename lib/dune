@@ -1,4 +1,4 @@
 (library
- (name page)
- (modules page)
+ (name controller)
+ (modules controller)
  (libraries dream))

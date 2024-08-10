@@ -33,7 +33,9 @@ let () =
     @@ Dream.logger
     @@ count_requests
     @@ stats_requests
-    @@ Dream.set_secret (match Sys.getenv_opt "COOKIE_SECRET" with | Some cookie_secret -> cookie_secret | _ ->  "foo")
+    @@ Dream.set_secret (match Sys.getenv_opt "COOKIE_SECRET" with
+    | Some cookie_secret -> cookie_secret
+    | _ ->  "foo")
     @@ Dream.memory_sessions
     @@ Dream.router [
       Dream.get "/"
@@ -44,11 +46,9 @@ let () =
         (fun request ->
           Dream.html (Dream.param request "word"));
 
-
       Dream.get "/count"
         (fun _ ->
           Dream.html (Printf.sprintf "Saw %i request(s)!" !count));
-
 
       Dream.get "/stats"
       (fun _ ->
@@ -88,7 +88,14 @@ let () =
       Dream.get "/page/:word" (fun request ->
         Dream.param request "word"
         |> fun word ->
-        Page.render word
+        Controller.convert_to_html word
+        |> Dream.html);
+
+
+      Dream.get "/form/:input" (fun request ->
+        Dream.param request "input"
+        |> fun input ->
+        Components.Form.render input
         |> Dream.html);
 
       Dream.get "templates/:word"
@@ -106,7 +113,6 @@ let () =
           let%lwt () = Dream.set_session_field request "user" user in
           Printf.ksprintf
             Dream.html "You weren't logged in; but now you are <b>%s!</b>" (Dream.html_escape user)
-
         | Some username ->
           Printf.ksprintf
             Dream.html "Welcome back, <b>%s!</b>" (Dream.html_escape username));
@@ -117,7 +123,6 @@ let () =
         | Some value ->
           Printf.ksprintf
             Dream.html "Your logged in name is %s!" (Dream.html_escape value)
-
         | None ->
           let username = Dream.param request "name" in
           let response = Dream.response "Set user name; come again!" in
