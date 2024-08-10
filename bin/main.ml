@@ -1,3 +1,4 @@
+let envir = "dev"
 let count = ref 0
 let successful = ref 0
 let failed = ref 0
@@ -16,7 +17,7 @@ let stats_requests inner_handler request =
     raise exn
 
 let () =
-  Dream.run
+    Dream.run ?error_handler:(if envir = "dev" then Some Dream.debug_error_handler else None)
     @@ Dream.logger
     @@ count_requests
     @@ stats_requests
@@ -44,6 +45,10 @@ let () =
       (fun _ ->
         Dream.warning (fun log -> log "Raising an exception!");
         raise (Failure "The Web app failed!"));
+
+      Dream.get "/bad"
+      (fun _ ->
+        Dream.empty `Bad_Request);
 
       Dream.post "/echo" (fun request ->
       let%lwt body = Dream.body request in
