@@ -1,4 +1,3 @@
-let envir = "dev"
 let count = ref 0
 let successful = ref 0
 let failed = ref 0
@@ -17,7 +16,7 @@ let stats_requests inner_handler request =
     raise exn
 
 let () =
-    Dream.run ?error_handler:(if envir = "dev" then Some Dream.debug_error_handler else None)
+    Dream.run ?error_handler:(if Sys.getenv_opt "DREAM_ENV" = Some "dev" then Some Dream.debug_error_handler else None)
     @@ Dream.logger
     @@ count_requests
     @@ stats_requests
