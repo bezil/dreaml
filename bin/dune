@@ -3,3 +3,9 @@
  (name main)
  (libraries page dream)
  (preprocess (pps lwt_ppx)))
+
+
+(rule
+ (targets templates.ml)
+ (deps templates.eml.html)
+ (action (run dream_eml %{deps} --workspace %{workspace_root})))

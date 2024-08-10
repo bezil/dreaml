@@ -71,4 +71,10 @@ let () =
         let word = Dream.param request "word" in
         let html_content = Page.render word in
         Dream.html html_content);
+
+    Dream.get "templates/:word"
+    (fun request ->
+      Dream.param request "word"
+      |> Templates.render_html
+      |> Dream.html);
   ]
