@@ -92,11 +92,14 @@ let () =
         |> Dream.html);
 
 
-      Dream.get "/form/:input" (fun request ->
-        Dream.param request "input"
-        |> fun input ->
-        Components.Form.render input
-        |> Dream.html);
+      Dream.get "/form" (fun request ->
+        Dream.html (Components.Form.show_form request));
+
+      Dream.post "/form"
+      (fun request ->
+        match%lwt Dream.form request with
+        | `Ok ["message", message] -> Dream.html (Components.Form.show_form ~message request)
+        | _ -> Dream.empty `Bad_Request);
 
       Dream.get "templates/:word"
       (fun request ->

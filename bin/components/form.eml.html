@@ -1,2 +1,17 @@
-let render param =
-  Printf.sprintf "<html><body><h1>The URL parameter was %s!</h1></body></html>" (Dream.html_escape param)
+let show_form ?message request =
+  <html>
+  <body>
+
+%   begin match message with
+%   | None -> ()
+%   | Some message ->
+      <p>You entered: <b><%s message %>!</b></p>
+%   end;
+
+    <form method="POST" action="/form">
+      <%s! Dream.csrf_tag request %>
+      <input name="message" autofocus>
+    </form>
+
+  </body>
+  </html>
