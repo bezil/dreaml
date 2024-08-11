@@ -2,7 +2,7 @@
  (public_name hello)
  (name main)
  (libraries controller dream components)
- (preprocess (pps lwt_ppx)))
+ (preprocess (pps lwt_ppx ppx_yojson_conv)))
 
 (rule
 (targets templates.ml errors.ml)

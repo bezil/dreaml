@@ -1,3 +1,9 @@
+open Ppx_yojson_conv_lib.Yojson_conv.Primitives
+
+type message_object = {
+  message : string;
+} [@@deriving yojson]
+
 let count = ref 0
 let successful = ref 0
 let failed = ref 0
@@ -31,6 +37,7 @@ let () =
     | Some "dev" -> Some Dream.debug_error_handler
     | _ -> Some (Dream.error_template prod_error))
     @@ Dream.logger
+    @@ Dream.origin_referrer_check
     @@ count_requests
     @@ stats_requests
     @@ Dream.set_secret (match Sys.getenv_opt "COOKIE_SECRET" with
@@ -77,6 +84,28 @@ let () =
             Dream.respond
               ~headers:["Content-Type", "application/json"]
               body
+        | Some other_type ->
+            Dream.log "Content-Type header %s recieved is not valid" other_type;
+            Dream.respond ~status:`Unsupported_Media_Type "Unsupported Content-Type"
+        | _ ->
+            Dream.log "Content-Type header recieved is not recieved";
+            Dream.respond ~status:`Bad_Request "Content-Type header should be application/json")
+      );
+
+      Dream.post "/parse/json" (fun request ->
+        (match Dream.header request "Content-Type" with
+        | Some "application/json" ->
+          (let%lwt body = Dream.body request in
+
+          let message_object =
+            body
+            |> Yojson.Safe.from_string
+            |> message_object_of_yojson
+          in
+
+          `String message_object.message
+          |> Yojson.Safe.to_string
+          |> Dream.json)
         | Some other_type ->
             Dream.log "Content-Type header %s recieved is not valid" other_type;
             Dream.respond ~status:`Unsupported_Media_Type "Unsupported Content-Type"

@@ -4,6 +4,10 @@ OCAML_EXE = dune exec hello
 # Define the environment file
 ENV_FILE = .env
 
+# install dependencies
+deps:
+	opam install --deps-only --yes .
+
 # Define the command to source environment variables, build, and run the executable
 run:
 	@echo "Sourcing environment variables from $(ENV_FILE)..."

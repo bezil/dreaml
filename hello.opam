@@ -13,6 +13,7 @@ depends: [
   "ocaml"
   "dune" {>= "3.16"}
   "dream"
+  "ppx_yojson_conv"
   "odoc" {with-doc}
 ]
 build: [
