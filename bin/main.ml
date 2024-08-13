@@ -161,4 +161,6 @@ let () =
           Dream.add_header response "Content-Type" Dream.text_html;
           Dream.set_cookie response request "dreaml.cookie.session" username;
           Lwt.return response);
+
+          Dream.get "/static/**" (Dream.static ".");
   ]
