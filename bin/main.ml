@@ -130,6 +130,14 @@ let () =
         | `Ok ["message", message] -> Dream.html (Components.Form.show_form ~message request)
         | _ -> Dream.empty `Bad_Request);
 
+      Dream.post "/form/files"
+      (fun request ->
+        match%lwt Dream.multipart request with
+          | `Ok ["files", files] ->
+            Dream.html (Components.Form.show_form ~files request)
+          | _ -> Dream.log "Multipart failed";
+          Dream.empty `Bad_Request);
+
       Dream.get "templates/:word"
       (fun request ->
         Dream.param request "word"
@@ -162,5 +170,5 @@ let () =
           Dream.set_cookie response request "dreaml.cookie.session" username;
           Lwt.return response);
 
-          Dream.get "/static/**" (Dream.static ".");
+      Dream.get "/static/**" (Dream.static "./assets");
   ]

@@ -1,17 +1,34 @@
-let show_form ?message request =
+let show_form ?(files=[]) ?message request =
+let file_entries =
+  files
+  |> List.map (fun (name_opt, content) ->
+    let name =
+      match name_opt with
+      | None -> "None"
+      | Some name -> Dream.html_escape name
+    in
+    Printf.sprintf "%s, %i bytes" name (String.length content)
+  )
+  |> String.concat " - "
+  in
+  let message_html =
+    match message with
+    | None -> ""
+    | Some message ->
+      Printf.sprintf "%s!" (Dream.html_escape message)
+  in
   <html>
   <body>
-
-%   begin match message with
-%   | None -> ()
-%   | Some message ->
-      <p>You entered: <b><%s message %>!</b></p>
-%   end;
-
+    <p><%s file_entries %></p>
+    <p>You entered: <b> <%s message_html %></b></p>
     <form method="POST" action="/form">
       <%s! Dream.csrf_tag request %>
       <input name="message" autofocus>
     </form>
-
+    <form method="POST" action="/form/files" enctype="multipart/form-data">
+      <%s! Dream.csrf_tag request %>
+      <input name="files" type="file" multiple>
+      <button>Submit!</button>
+    </form>
   </body>
   </html>
