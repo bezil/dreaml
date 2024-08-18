@@ -9,7 +9,7 @@ let file_entries =
     in
     Printf.sprintf "%s, %i bytes" name (String.length content)
   )
-  |> String.concat " - "
+  |> String.concat "<br/>"
   in
   let message_html =
     match message with
@@ -19,7 +19,7 @@ let file_entries =
   in
   <html>
   <body>
-    <p><%s file_entries %></p>
+    <p><%s! file_entries %></p>
     <p>You entered: <b> <%s message_html %></b></p>
     <form method="POST" action="/form">
       <%s! Dream.csrf_tag request %>
