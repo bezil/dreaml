@@ -1,7 +1,7 @@
 (executable
  (public_name hello)
  (name main)
- (libraries controller dream components)
+ (libraries controller dream components caqti-driver-postgresql)
  (preprocess (pps lwt_ppx ppx_yojson_conv)))
 
 (rule

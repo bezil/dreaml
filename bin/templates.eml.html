@@ -1,6 +1,23 @@
-let render_html param =
+let render_html param ?(comments=[]) request =
+    let prop = Dream.html_escape param in
+    let comment_lines =
+        comments
+        |> List.map (fun (id, comment) ->
+            Printf.sprintf "comment %d : %s" id (Dream.html_escape comment)
+        )
+        |> String.concat "<br/>"
+    in
 <html>
-    <body>
-        <h1>The URL parameter was <%s param %>!</h1>
-    </body>
-</html>
+  <body>
+    <h1>The URL parameter was <%s prop %>!</h1>
+
+%   begin if List.length comments > 0 then
+    <p><%s! comment_lines %></p>
+%   end;
+
+    <form method="POST" action="/db/">
+      <%s! Dream.csrf_tag request %>
+      <input name="text" autofocus>
+    </form>
+  </body>
+  </html>

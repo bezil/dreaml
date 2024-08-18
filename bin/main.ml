@@ -33,7 +33,7 @@ let prod_error _error debug_info suggested_response =
   Lwt.return suggested_response
 
 let () =
-    Dream.run ?error_handler:(match Sys.getenv_opt "DREAM_ENV" with
+    Dream.run ~interface:"0.0.0.0" ?error_handler:(match Sys.getenv_opt "DREAM_ENV" with
     | Some "dev" -> Some Dream.debug_error_handler
     | _ -> Some (Dream.error_template prod_error))
     @@ Dream.logger
@@ -44,6 +44,10 @@ let () =
     | Some cookie_secret -> cookie_secret
     | _ ->  "foo")
     @@ Dream.memory_sessions
+    @@ Dream.sql_pool (match Sys.getenv_opt "DB_URL" with
+    | Some url -> url
+    |_ -> "sqlite3:db.sqlite")
+    @@ Dream.sql_sessions
     @@ Dream.router [
       Dream.get "/"
         (fun _ ->
@@ -140,9 +144,10 @@ let () =
 
       Dream.get "templates/:word"
       (fun request ->
-        Dream.param request "word"
-        |> Templates.render_html
-        |> Dream.html);
+        let param = Dream.param request "word" in
+        Templates.render_html param ~comments:[] request
+        |> Dream.html
+      );
 
       Dream.get "login/:user"
       (fun request ->
@@ -171,4 +176,17 @@ let () =
           Lwt.return response);
 
       Dream.get "/static/**" (Dream.static "./assets");
+
+      Dream.get "/db/" (fun request ->
+        let%lwt comments = Dream.sql request Controller.list_comments in
+        let html = Templates.render_html "Db Testing" ~comments request in
+        Dream.html html);
+
+      Dream.post "/db/" (fun request ->
+        match%lwt Dream.form request with
+        | `Ok ["text", text] ->
+          let%lwt () = Dream.sql request (Controller.add_comment text) in
+          Dream.redirect request "/db/"
+        | _ ->
+          Dream.empty `Bad_Request);
   ]
