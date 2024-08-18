@@ -3,6 +3,6 @@
  (libraries dream))
 
 (rule
- (targets form.ml)
- (deps form.eml.html)
+ (targets form.ml code_editor.ml)
+ (deps form.eml.html code_editor.eml.html)
  (action (run dream_eml %{deps} --workspace %{workspace_root})))

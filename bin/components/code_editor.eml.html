@@ -1,0 +1,18 @@
+let render_code code request =
+let executed_output =
+    Printf.sprintf "%s" (Dream.html_escape code) in
+  <html>
+  <body>
+    <p> <b>Enter ruby code to execute:</b></p>
+    <form method="POST" action="/run">
+      <%s! Dream.csrf_tag request %>
+      <textarea style="width:400px" name="code" autofocus>
+
+      </textarea>
+    <button>Submit!</button>
+    </form>
+%   begin if executed_output <> "None" then
+        <p>Result: <b> <%s! executed_output %></b></p>
+%   end;
+  </body>
+  </html>

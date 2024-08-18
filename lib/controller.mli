@@ -6,3 +6,5 @@ val convert_to_html : string -> string
 
 val list_comments: (module DB) -> (int * string) list Lwt.t
 val add_comment : string -> (module DB) -> unit Lwt.t
+
+val rubicel: string -> string Lwt.t

@@ -189,4 +189,16 @@ let () =
           Dream.redirect request "/db/"
         | _ ->
           Dream.empty `Bad_Request);
+
+      Dream.get "/run" (fun request ->
+          Dream.html (Components.Code_editor.render_code "" request));
+
+      Dream.post "/run" (fun request ->
+        let%lwt form_data = Dream.form request in
+        match form_data with
+        | `Ok [("code", code)] ->
+          let%lwt output = Controller.rubicel code in
+          Dream.log "executed this %s" output;
+          Dream.html (Components.Code_editor.render_code output request)
+        | _ -> Dream.empty `Bad_Request);
   ]

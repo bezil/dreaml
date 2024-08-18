@@ -22,3 +22,22 @@ let list_comments =
     fun text (module Db : DB) ->
       let%lwt unit_or_error = Db.exec query text in
       Caqti_lwt.or_fail unit_or_error
+
+(* Escape double quotes and backslashes in Ruby code *)
+let escape_ruby_code code =
+  String.to_seq code
+  |> Seq.fold_left (fun acc c ->
+     let escaped_char =
+       match c with
+       | '"' -> "\\\""
+       | '\\' -> "\\\\"
+       | _ -> String.make 1 c
+     in
+     acc ^ escaped_char
+  ) ""
+
+let rubicel code =
+  (* Escape the Ruby code to be safe for command line execution *)
+  let escaped_code = escape_ruby_code code in
+  let command = Printf.sprintf "ruby -e \"%s\"" escaped_code in
+  Lwt_process.pread ("", [| "/bin/sh"; "-c"; command |])
