@@ -1,5 +1,5 @@
 (library
  (name controller)
- (modules controller)
- (libraries dream caqti-driver-postgresql)
+ (modules controller user)
+ (libraries dream caqti-driver-postgresql safepass)
  (preprocess (pps lwt_ppx)))

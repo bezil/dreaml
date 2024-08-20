@@ -19,7 +19,7 @@
  (name hello)
  (synopsis "Dream OCAML Webapp")
  (description "Learn Dream OCAML Web Framework")
- (depends ocaml dune dream ppx_yojson_conv caqti-driver-postgresql)
+ (depends ocaml dune dream ppx_yojson_conv caqti-driver-postgresql (safepass (= 3.0)))
  (tags
   (topics "to describe" your project)))
 

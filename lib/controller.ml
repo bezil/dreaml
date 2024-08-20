@@ -1,9 +1,12 @@
-let convert_to_html param =
-  Printf.sprintf "<html><body><h1>%s!</h1></body></html>" (Dream.html_escape param)
-
 module type DB = Caqti_lwt.CONNECTION
 module R = Caqti_request
 module T = Caqti_type
+
+open Caqti_request.Infix
+open Caqti_type.Std
+
+let convert_to_html param =
+  Printf.sprintf "<html><body><h1>%s!</h1></body></html>" (Dream.html_escape param)
 
 let list_comments =
   let query =
@@ -41,3 +44,23 @@ let rubicel code =
   let escaped_code = escape_ruby_code code in
   let command = Printf.sprintf "ruby -e \"%s\"" escaped_code in
   Lwt_process.pread ("", [| "/bin/sh"; "-c"; command |])
+
+let find_by_username =
+  let query =
+    (T.string ->? T.(tup3 int string string))
+    "SELECT id, username, password_hash FROM users WHERE username = $1"
+  in
+  fun username (module Db : Caqti_lwt.CONNECTION) ->
+    let%lwt user_or_error = Db.find_opt query username in
+    Lwt.return (Caqti_lwt.or_fail user_or_error)
+
+(* SQL query to create a new user *)
+let create =
+  let query =
+    (T.tup2 string string ->. T.unit)
+    "INSERT INTO users (username, password_hash) VALUES ($1, $2)"
+  in
+  fun username password (module Db : Caqti_lwt.CONNECTION) ->
+    let password_hash = Bcrypt.hash password |> Bcrypt.string_of_hash in
+    let%lwt unit_or_error = Db.exec query (username, password_hash) in
+    Lwt.return (Caqti_lwt.or_fail unit_or_error)

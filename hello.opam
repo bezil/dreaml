@@ -15,6 +15,7 @@ depends: [
   "dream"
   "ppx_yojson_conv"
   "caqti-driver-postgresql"
+  "safepass" {= "3.0"}
   "odoc" {with-doc}
 ]
 build: [

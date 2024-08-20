@@ -1,5 +1,5 @@
 # Define the OCaml executable
-OCAML_EXE = dune exec hello
+OCAML_EXE = dune exec hello -w
 
 # Define the environment file
 ENV_FILE = .env
@@ -7,6 +7,10 @@ ENV_FILE = .env
 # install dependencies
 deps:
 	opam install --deps-only --yes .
+
+# Build and Watch
+watch:
+	dune build -w
 
 # Define the command to source environment variables, build, and run the executable
 run:
