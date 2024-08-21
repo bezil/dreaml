@@ -64,3 +64,61 @@ let create =
     let password_hash = Bcrypt.hash password |> Bcrypt.string_of_hash in
     let%lwt unit_or_error = Db.exec query (username, password_hash) in
     (Caqti_lwt.or_fail unit_or_error)
+
+  let find_in_form name form =
+    List.assoc_opt name form
+
+  let signin_handler request =
+    let%lwt form = Dream.form request in
+    match form with
+    | `Ok form ->
+      (* Extract username and password from the form *)
+      (match find_in_form "username" form, find_in_form "password" form with
+        | Some username, Some password ->
+          (* Here you would use your database logic *)
+          let%lwt result = Dream.sql request (fun (module Db : Caqti_lwt.CONNECTION) ->
+            find_by_username username (module Db)
+          ) in
+            let%lwt response = match result with
+            | Some (_id, _username, password_hash) ->
+              if Bcrypt.verify password (Bcrypt.hash_of_string password_hash) then
+                (* Successful login *)
+                Lwt.return (Dream.respond "Login successful")
+              else
+                (* Incorrect password *)
+                Lwt.return (Dream.respond ~status:`Unauthorized "Invalid username or password")
+            | None ->
+              (* User not found *)
+              Lwt.return (Dream.respond ~status:`Unauthorized "User not found")
+          in
+          response
+        | _ ->
+          (* Missing username or password *)
+          (Dream.respond ~status:`Unauthorized "Missing username or password"))
+    | _->
+      Dream.respond ~status:`Unauthorized "Form expired"
+
+
+(* Define the signup handler *)
+let signup_handler request : Dream.response Lwt.t =
+  let%lwt form = Dream.form request in
+  match form with
+  | `Ok form ->
+    (* Extract username and password from the form *)
+    (match find_in_form "username" form, find_in_form "password" form with
+     | Some username, Some password ->
+       (* Check if username or password is empty *)
+       if String.trim username = "" || String.trim password = "" then
+         Dream.respond ~status:`Bad_Request "Username and password must not be empty"
+       else
+         (* Insert the new user into the database *)
+         let%lwt _result = Dream.sql request (fun (module Db : Caqti_lwt.CONNECTION) ->
+           create username password (module Db)
+         ) in
+         Dream.respond "Signup successful"
+
+     | _ ->
+       (* Missing username or password *)
+       Dream.respond ~status:`Unauthorized "Username and password are required")
+  | _ ->
+    Dream.respond ~status:`Unauthorized "Form data is in the wrong format"
