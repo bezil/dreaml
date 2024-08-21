@@ -52,7 +52,7 @@ let find_by_username =
   in
   fun username (module Db : Caqti_lwt.CONNECTION) ->
     let%lwt user_or_error = Db.find_opt query username in
-    Lwt.return (Caqti_lwt.or_fail user_or_error)
+    (Caqti_lwt.or_fail user_or_error)
 
 (* SQL query to create a new user *)
 let create =
@@ -63,4 +63,4 @@ let create =
   fun username password (module Db : Caqti_lwt.CONNECTION) ->
     let password_hash = Bcrypt.hash password |> Bcrypt.string_of_hash in
     let%lwt unit_or_error = Db.exec query (username, password_hash) in
-    Lwt.return (Caqti_lwt.or_fail unit_or_error)
+    (Caqti_lwt.or_fail unit_or_error)

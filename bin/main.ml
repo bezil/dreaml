@@ -21,6 +21,40 @@ let stats_requests inner_handler request =
     failed := !failed + 1;
     raise exn
 
+(* Helper function to extract a specific field from the form data *)
+let find_in_form name form =
+  List.assoc_opt name form
+
+let signin_handler request =
+  let%lwt form = Dream.form request in
+  match form with
+  | `Ok form ->
+    (* Extract username and password from the form *)
+    (match find_in_form "username" form, find_in_form "password" form with
+     | Some username, Some password ->
+       (* Here you would use your database logic *)
+       let%lwt result = Dream.sql request (fun (module Db : Caqti_lwt.CONNECTION) ->
+          Controller.find_by_username username (module Db)
+        ) in
+          let%lwt response = match result with
+          | Some (_id, _username, password_hash) ->
+            if Bcrypt.verify password (Bcrypt.hash_of_string password_hash) then
+              (* Successful login *)
+              Lwt.return (Dream.respond "Login successful")
+            else
+              (* Incorrect password *)
+              Lwt.return (Dream.respond ~status:`Unauthorized "Invalid username or password")
+          | None ->
+            (* User not found *)
+            Lwt.return (Dream.respond ~status:`Unauthorized "User not found")
+        in
+        response
+     | _ ->
+       (* Missing username or password *)
+       (Dream.respond ~status:`Unauthorized "Missing username or password"))
+  | _->
+    Dream.respond ~status:`Unauthorized "Form expired"
+
 let prod_error _error debug_info suggested_response =
   let status = Dream.status suggested_response in
   let code = Dream.status_to_int status
@@ -201,4 +235,6 @@ let () =
           Dream.log "executed this %s" output;
           Dream.html (Components.Code_editor.render_code output request)
         | _ -> Dream.empty `Bad_Request);
+
+      Dream.post "/signin" signin_handler;
   ]
