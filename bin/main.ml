@@ -49,6 +49,14 @@ let () =
     |_ -> "sqlite3:db.sqlite")
     @@ Dream.sql_sessions
     @@ Dream.router [
+      Dream.post "/signin" Controller.signin_handler;
+      Dream.post "/signup" Controller.signup_handler;
+      Dream.get "/signin" (fun request ->
+        Dream.html (Components.Login.render_form request));
+      Dream.get "/signup" (fun request ->
+          Dream.html (Components.Register.render_form request));
+
+      (* Learning Ocaml *)
       Dream.get "/"
         (fun _ ->
           Dream.html "Good morning, world!");
@@ -123,7 +131,6 @@ let () =
         |> fun word ->
         Controller.convert_to_html word
         |> Dream.html);
-
 
       Dream.get "/form" (fun request ->
         Dream.html (Components.Form.show_form request));
@@ -202,6 +209,5 @@ let () =
           Dream.html (Components.Code_editor.render_code output request)
         | _ -> Dream.empty `Bad_Request);
 
-      Dream.post "/signin" Controller.signin_handler;
-      Dream.post "/signup" Controller.signup_handler;
+
   ]

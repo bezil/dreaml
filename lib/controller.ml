@@ -83,7 +83,9 @@ let create =
             | Some (_id, _username, password_hash) ->
               if Bcrypt.verify password (Bcrypt.hash_of_string password_hash) then
                 (* Successful login *)
-                Lwt.return (Dream.respond "Login successful")
+                let message = "Login successful" in
+                let content = Components.Login.render_form ~message request in
+                Lwt.return (Dream.respond ~status:`OK ~headers:[("Content-Type", "text/html")] content)
               else
                 (* Incorrect password *)
                 Lwt.return (Dream.respond ~status:`Unauthorized "Invalid username or password")
@@ -115,7 +117,9 @@ let signup_handler request : Dream.response Lwt.t =
          let%lwt _result = Dream.sql request (fun (module Db : Caqti_lwt.CONNECTION) ->
            create username password (module Db)
          ) in
-         Dream.respond "Signup successful"
+        let message = "Signup successful" in
+        let content = Components.Register.render_form ~message request in
+        Dream.respond ~status:`OK ~headers:[("Content-Type", "text/html")] content
 
      | _ ->
        (* Missing username or password *)

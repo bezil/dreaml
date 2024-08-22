@@ -1,0 +1,19 @@
+let render_form ?message request =
+  let login_response =
+    match message with
+    | None -> ""
+    | Some message ->
+      Printf.sprintf "%s!" (Dream.html_escape message)
+  in
+  <html>
+  <body>
+    <form method="POST" action="/signin">
+      <%s! Dream.csrf_tag request %>
+      <input name="username" placeholder="Name" autofocus>
+      <input name="password" type="password" placeholder="Password">
+
+      <button>Login</button>
+    </form>
+    <p><b><%s login_response %></b></p>
+  </body>
+  </html>
