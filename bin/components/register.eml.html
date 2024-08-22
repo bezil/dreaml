@@ -1,19 +1,103 @@
 let render_form ?message request =
-  let signup_response =
-    match message with
-    | None -> ""
-    | Some message ->
-      Printf.sprintf "%s!" (Dream.html_escape message)
-  in
-  <html>
-  <body>
-    <form method="POST" action="/signup">
-      <%s! Dream.csrf_tag request %>
-      <input name="username" placeholder="Name" autofocus>
-      <input name="password" type="password" placeholder="Password">
+let signup_response =
+match message with
+| None -> ""
+| Some message ->
+Printf.sprintf "%s!" (Dream.html_escape message)
+in
+<html>
 
-      <button>Register</button>
+<body>
+    <form class="register" method="POST" action="/signup">
+        <%s! Dream.csrf_tag request %>
+        <h2>Welcome!</h2>
+        <p>Register</p>
+
+            <input name="username" type="text" placeholder="Name" autofocus>
+            <input name="password" type="password" placeholder="Password">
+
+            <button class="links">Register</button>
     </form>
     <p><b><%s signup_response %></b></p>
-  </body>
-  </html>
+</body>
+
+</html>
+
+<style>
+    @import url('https://fonts.googleapis.com/css?family=Raleway:400,700');
+
+    body {
+        background: #c0c0c0;
+        font-family: Raleway, sans-serif;
+        color: #666;
+    }
+
+    .register {
+        margin: 20px auto;
+        padding: 40px 50px;
+        max-width: 300px;
+        border-radius: 5px;
+        background: #fff;
+        box-shadow: 1px 1px 1px #666;
+    }
+
+    .register input {
+        width: 100%;
+        display: block;
+        box-sizing: border-box;
+        margin: 10px 0;
+        padding: 14px 12px;
+        font-size: 16px;
+        border-radius: 2px;
+        font-family: Raleway, sans-serif;
+    }
+
+    .register input[type=text],
+    .register input[type=password] {
+        border: 1px solid #c0c0c0;
+        transition: .2s;
+    }
+
+    .register input[type=text]:hover {
+        border-color: #F44336;
+        outline: none;
+        transition: all .2s ease-in-out;
+    }
+
+    .links {
+        border: none;
+        background: #EF5350;
+        color: white;
+        font-weight: bold;
+        transition: 0.2s;
+        margin: 20px 0px;
+        padding: 12px;
+    }
+
+    .links:hover {
+        background: #F44336;
+    }
+
+    .register h2 {
+        margin: 20px 0 0;
+        color: #EF5350;
+        font-size: 28px;
+    }
+
+    .register p {
+        margin-bottom: 40px;
+    }
+
+    .links {
+        display: table;
+        width: 100%;
+        box-sizing: border-box;
+        border-top: 1px solid #c0c0c0;
+        margin-bottom: 10px;
+    }
+
+    .register h2,
+    .register p {
+        text-align: center;
+    }
+</style>

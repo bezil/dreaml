@@ -88,15 +88,15 @@ let create =
                 Lwt.return (Dream.respond ~status:`OK ~headers:[("Content-Type", "text/html")] content)
               else
                 (* Incorrect password *)
-                Lwt.return (Dream.respond ~status:`Unauthorized "Invalid username or password")
+                Lwt.return (Dream.respond ~status:`Bad_Request "Invalid username or password")
             | None ->
               (* User not found *)
-              Lwt.return (Dream.respond ~status:`Unauthorized "User not found")
+              Lwt.return (Dream.respond ~status:`Bad_Request "User not found")
           in
           response
         | _ ->
           (* Missing username or password *)
-          (Dream.respond ~status:`Unauthorized "Missing username or password"))
+          (Dream.respond ~status:`Bad_Request "Missing username or password"))
     | _->
       Dream.respond ~status:`Unauthorized "Form expired"
 
@@ -123,6 +123,6 @@ let signup_handler request : Dream.response Lwt.t =
 
      | _ ->
        (* Missing username or password *)
-       Dream.respond ~status:`Unauthorized "Username and password are required")
+       Dream.respond ~status:`Bad_Request "Username and password are required")
   | _ ->
-    Dream.respond ~status:`Unauthorized "Form data is in the wrong format"
+    Dream.respond ~status:`Bad_Request "Form data is in the wrong format"
