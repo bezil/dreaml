@@ -4,8 +4,8 @@ module T = Caqti_type
 
 val convert_to_html : string -> string
 
-val find_by_username : string -> (module Caqti_lwt.CONNECTION) -> (int * string * string) option Lwt.t
-val create: string -> string -> (module DB) -> unit Lwt.t
+val find_by_username : string -> (module DB) -> (int * string * string * string) option Lwt.t
+val create: string -> string -> string -> (module DB) -> unit Lwt.t
 val find_in_form: 'a -> ('a * 'b) list -> 'b option
 val signin_handler: Dream.request -> Dream.response Lwt.t
 val signup_handler: Dream.request -> Dream.response Lwt.t

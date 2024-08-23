@@ -4,5 +4,6 @@ module User = struct
     id : int;
     username : string;
     password_hash : string;
+    email : string;
   }
 end

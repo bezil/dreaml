@@ -8,6 +8,11 @@ ENV_FILE = .env
 deps:
 	opam install --deps-only --yes .
 
+# DB migrate/update
+db:
+	psql -U postgres -d vidash_live_dev -f bin/schema.sql
+
+
 # Build and Watch
 watch:
 	dune build -w

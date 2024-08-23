@@ -15,3 +15,5 @@ CREATE TABLE users (
   username VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL
 );
+
+ALTER TABLE users ADD COLUMN email VARCHAR(255) NULL;

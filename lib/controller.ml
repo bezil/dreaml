@@ -47,22 +47,22 @@ let rubicel code =
 
 let find_by_username =
   let query =
-    (T.string ->? T.(tup3 int string string))
-    "SELECT id, username, password_hash FROM users WHERE username = $1"
+    (T.string ->? T.(tup4 int string string string))
+    "SELECT id, username, password_hash, email FROM users WHERE username = $1"
   in
-  fun username (module Db : Caqti_lwt.CONNECTION) ->
+  fun username (module Db: DB) ->
     let%lwt user_or_error = Db.find_opt query username in
     (Caqti_lwt.or_fail user_or_error)
 
 (* SQL query to create a new user *)
 let create =
   let query =
-    (T.tup2 string string ->. T.unit)
-    "INSERT INTO users (username, password_hash) VALUES ($1, $2)"
+    (T.tup3 string string string ->. T.unit)
+    "INSERT INTO users (username, password_hash, email) VALUES ($1, $2, $3)"
   in
-  fun username password (module Db : Caqti_lwt.CONNECTION) ->
+  fun username password email (module Db: DB) ->
     let password_hash = Bcrypt.hash password |> Bcrypt.string_of_hash in
-    let%lwt unit_or_error = Db.exec query (username, password_hash) in
+    let%lwt unit_or_error = Db.exec query (username, password_hash, email) in
     (Caqti_lwt.or_fail unit_or_error)
 
   let find_in_form name form =
@@ -76,11 +76,11 @@ let create =
       (match find_in_form "username" form, find_in_form "password" form with
         | Some username, Some password ->
           (* Here you would use your database logic *)
-          let%lwt result = Dream.sql request (fun (module Db : Caqti_lwt.CONNECTION) ->
+          let%lwt result = Dream.sql request (fun (module Db: DB) ->
             find_by_username username (module Db)
           ) in
             let%lwt response = match result with
-            | Some (_id, _username, password_hash) ->
+            | Some (_id, _username, password_hash, _email) ->
               if Bcrypt.verify password (Bcrypt.hash_of_string password_hash) then
                 (* Successful login *)
                 let message = "Login successful" in
@@ -107,15 +107,15 @@ let signup_handler request : Dream.response Lwt.t =
   match form with
   | `Ok form ->
     (* Extract username and password from the form *)
-    (match find_in_form "username" form, find_in_form "password" form with
-     | Some username, Some password ->
+    (match find_in_form "username" form, find_in_form "password" form, find_in_form "email" form with
+     | Some username, Some password, Some email ->
        (* Check if username or password is empty *)
-       if String.trim username = "" || String.trim password = "" then
+       if String.trim username = "" || String.trim password = "" || String.trim email = "" then
          Dream.respond ~status:`Bad_Request "Username and password must not be empty"
        else
          (* Insert the new user into the database *)
          let%lwt _result = Dream.sql request (fun (module Db : Caqti_lwt.CONNECTION) ->
-           create username password (module Db)
+           create username password email (module Db)
          ) in
         let message = "Signup successful" in
         let content = Components.Register.render_form ~message request in

@@ -5,6 +5,7 @@ match message with
 | Some message ->
 Printf.sprintf "%s!" (Dream.html_escape message)
 in
+<!DOCTYPE html>
 <html>
 
 <body>
@@ -17,9 +18,30 @@ in
 
             <button class="links">Login</button>
     </form>
-    <p><b>
-            <%s login_response %>
-        </b></p>
+    <div class='toast' style="display: none;">
+        <div class='toast-content'><%s login_response %></div>
+    </div>
+
+    <script>
+        // Automatically show toast if present
+        let toast = document.querySelector('.toast');
+        let toastContent = document.querySelector('.toast-content');
+        let loginResponse = toastContent.innerText;
+
+        if (loginResponse.trim().length > 0) {
+            toast.style.display = 'block'; // Ensure the toast is visible
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                // toast.classList.add('hide');
+                // Optionally hide the toast completely after animation
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 500); // Match this with your CSS animation duration
+            }, 5000); // 5 seconds delay
+        }
+      </script>
 </body>
 
 </html>
@@ -54,12 +76,13 @@ in
     }
 
     .login input[type=text],
-    .login input[type=password] {
+    .login input[type=password],
+    .login input[type=email]  {
         border: 1px solid #c0c0c0;
         transition: .2s;
     }
 
-    .login input[type=text]:hover {
+    .login input:hover {
         border-color: #F44336;
         outline: none;
         transition: all .2s ease-in-out;
@@ -77,6 +100,7 @@ in
 
     .links:hover {
         background: #F44336;
+        cursor: pointer;
     }
 
     .login h2 {
@@ -101,4 +125,52 @@ in
     .login p {
         text-align: center;
     }
+    .toast {
+        max-width: 300px; /* Adjust size as needed */
+        height: auto;
+        /* Hide toast by default */
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 2px;
+        position: fixed;
+        z-index: 1;
+        left: 50%;
+        top: 30px;
+        transform: translateX(-50%); /* Center the toast */
+        font-size: 17px;
+        white-space: nowrap;
+        opacity: 0; /* Hidden by default */
+        visibility: hidden; /* Hidden by default */
+    }
+    .toast-content {
+        padding: 16px;
+    }
+    .toast.show {
+        visibility: visible;
+        opacity: 1; /* Make it visible */
+        -webkit-animation: fadein 0.5s, fadeout 0.5s 5s;
+        animation: fadein 0.5s, fadeout 0.5s 5s;
+    }
+
+    @-webkit-keyframes fadein {
+    from { opacity: 0; }
+    to { opacity: 1; }
+    }
+
+    @keyframes fadein {
+    from { opacity: 0; }
+    to { opacity: 1; }
+    }
+
+    @-webkit-keyframes fadeout {
+    from { opacity: 1; }
+    to { opacity: 0; }
+    }
+
+    @keyframes fadeout {
+    from { opacity: 1; }
+    to { opacity: 0; }
+    }
+
 </style>

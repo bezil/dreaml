@@ -10,15 +10,39 @@ in
 <body>
     <form class="register" method="POST" action="/signup">
         <%s! Dream.csrf_tag request %>
-        <h2>Welcome!</h2>
-        <p>Register</p>
+        <h2>DreaML!</h2>
+        <p>Create your account</p>
 
             <input name="username" type="text" placeholder="Name" autofocus>
+            <input name="email" type="email" placeholder="Email">
             <input name="password" type="password" placeholder="Password">
 
             <button class="links">Register</button>
     </form>
-    <p><b><%s signup_response %></b></p>
+    <div class='toast' style="display: none;">
+        <div class='toast-content'><%s signup_response %></div>
+    </div>
+
+    <script>
+        // Automatically show toast if present
+        let toast = document.querySelector('.toast');
+        let toastContent = document.querySelector('.toast-content');
+        let signupResponse = toastContent.innerText;
+
+        if (signupResponse.trim().length > 0) {
+            toast.style.display = 'block'; // Ensure the toast is visible
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                // toast.classList.add('hide');
+                // Optionally hide the toast completely after animation
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 500); // Match this with your CSS animation duration
+            }, 5000); // 5 seconds delay
+        }
+      </script>
 </body>
 
 </html>
@@ -53,12 +77,13 @@ in
     }
 
     .register input[type=text],
+    .register input[type=email],
     .register input[type=password] {
         border: 1px solid #c0c0c0;
         transition: .2s;
     }
 
-    .register input[type=text]:hover {
+    .register input:hover {
         border-color: #F44336;
         outline: none;
         transition: all .2s ease-in-out;
@@ -76,6 +101,7 @@ in
 
     .links:hover {
         background: #F44336;
+        cursor: pointer;
     }
 
     .register h2 {
@@ -99,5 +125,32 @@ in
     .register h2,
     .register p {
         text-align: center;
+    }
+    .toast {
+        max-width: 300px; /* Adjust size as needed */
+        height: auto;
+        /* Hide toast by default */
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 2px;
+        position: fixed;
+        z-index: 1;
+        left: 50%;
+        top: 30px;
+        transform: translateX(-50%); /* Center the toast */
+        font-size: 17px;
+        white-space: nowrap;
+        opacity: 0; /* Hidden by default */
+        visibility: hidden; /* Hidden by default */
+    }
+    .toast-content {
+        padding: 16px;
+    }
+    .toast.show {
+        visibility: visible;
+        opacity: 1; /* Make it visible */
+        -webkit-animation: fadein 0.5s, fadeout 0.5s 5s;
+        animation: fadein 0.5s, fadeout 0.5s 5s;
     }
 </style>
